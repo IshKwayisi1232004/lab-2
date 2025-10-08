@@ -1,35 +1,45 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  useEffect(()=> {
+   // const [count, setCount] = useState(0)
+
+    // Wait until the component has mounted
+    const mapContainer = document.getElementById("map");
+    if (!mapContainer) return; // prevent Leaflet from running too early
+
+    {/* Initialize the map and set its view */}
+    var map = L.map('map').setView([51.505, -0.09], 13);
+    
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, 
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    //Test marker
+    L.marker([51.505, -0.09]).addTo(map).bindPopup("Hello from London!").openPopup();
+
+    // Cleanup when component unmounts (important for hot reloads)
+    return () => {
+      map.remove();
+    };
+  }, []);
 
   return (
     <>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
+      <div id="map" style={{height: "100vh", width: "100%"}}></div>
     </>
-  )
+  );
 }
+
+
 
 export default App
