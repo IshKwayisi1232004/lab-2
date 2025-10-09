@@ -3,10 +3,11 @@ import { useEffect } from 'react'
 //import viteLogo from '/vite.svg'
 import './App.css'
 import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-// import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-// import markerIcon from 'leaflet/dist/images/marker-icon.png';
-// import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import L, { popup } from 'leaflet'
+
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 
 
@@ -19,39 +20,44 @@ import L from 'leaflet'
 // }
 
 function App() {
-  useEffect(()=> {
-    //const [count, setCount] = useState(0)
+    useEffect(()=> {
+      //const [count, setCount] = useState(0)
 
-    // Wait until the component has mounted
-    const mapContainer = document.getElementById("map");
-    if (!mapContainer) return; // prevent Leaflet from running too early
+      // Wait until the component has mounted
+      const mapContainer = document.getElementById("map");
+      if (!mapContainer) return; // prevent Leaflet from running too early
 
-    // const defaultIcon = L.Icon.Default.mergeOptions({
-    //   iconRetinaUrl: markerIcon2x,
-    //   iconUrl: markerIcon,
-    //   shadowUrl: markerShadow,
-    // });
+      L.Icon.Default.mergeOptions({
+         iconRetinaUrl: markerIcon2x,
+         iconUrl: markerIcon,
+         shadowUrl: markerShadow,
+     });
 
 
-    {/* Initialize the map and set its view */}
-    var map = L.map('map').setView([51.505, -0.09], 13);
+      {/* Initialize the map and set its view */}
+      var map = L.map('map').setView([51.505, -0.09], 13);
 
-    // Initalize the marker
-    var marker = L.marker([51.5, -0.09]).addTo(map);
+      // Initalize the marker
+      const marker = L.marker([51.5, -0.09]).addTo(map);
 
-    var circle = L.circle([51.508, -0.11], {
-    color: 'red',
-    fillColor: '#f03',
-    fillOpacity: 0.5,
-    radius: 500
-}).addTo(map);
+      var circle = L.circle([51.508, -0.11], {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.5,
+        radius: 500
+      }).addTo(map);
 
- function onMapClick(e){
-    alert("You clicked the map at " + e.latlng);
-  }
+    //map.on('click', onMapClick);
 
-  map.on('click', onMapClick);
-
+    // Map click popup
+    const popup = L.popup();
+    map.on('click', (e) => {
+      alert("You clicked the map at " + e.latlng);
+      popup
+        .setLatLng(e.latlng)
+        .setContent("You clicked the map at " + e.latlng.toString())
+        .openOn(map);
+    });
     
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19, 
@@ -77,7 +83,5 @@ function App() {
     </div>
   );
 }
-
-
 
 export default App
