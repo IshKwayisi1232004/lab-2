@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect } from 'react'
+//import reactLogo from './assets/react.svg'
+//import viteLogo from '/vite.svg'
 import './App.css'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -8,7 +8,7 @@ import L from 'leaflet'
 
 function App() {
   useEffect(()=> {
-   // const [count, setCount] = useState(0)
+    //const [count, setCount] = useState(0)
 
     // Wait until the component has mounted
     const mapContainer = document.getElementById("map");
@@ -32,11 +32,10 @@ function App() {
   }, []);
 
   return (
-    <>
-      <div>
-
-      <div id="map" style={{height: "100vh", width: "100%"}}></div>
-    </>
+    <div>
+      <h1>Here is ze map</h1>
+      <div id="map" style={{height: "400px", width: "100%"}}></div>
+    </div>
   );
 }
 
