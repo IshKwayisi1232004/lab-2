@@ -36,7 +36,7 @@ function App() {
 
 
       {/* Initialize the map and set its view */}
-      var map = L.map('map').setView([51.505, -0.09], 13);
+      var map = L.map('map').setView([43.3623, -71.4613], 13);
 
       // Initalize the marker
       // const marker = L.marker([51.5, -0.09]).addTo(map);
@@ -65,6 +65,14 @@ function App() {
       //   .setLatLng(e.latlng)
       //   .setContent("You clicked the map at " + e.latlng.toString())
       //   .openOn(map);
+
+      const message = window.prompt("Favorite Recreational Area:");
+
+      // If the user cancels or leaves the prompt empty
+      if(!message){
+        return;
+      }
+      
 
       L.marker(e.latlng, { icon: kirboIcon }).addTo(map);
 
