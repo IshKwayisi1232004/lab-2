@@ -22,7 +22,7 @@ import kirboImg from './assets/Kirbo.png'
 
 function App() {
     useEffect(()=> {
-      //const [count, setCount] = useState(0)
+      const [markers, setMarkers] = useState([]);
 
       // Wait until the component has mounted
       const mapContainer = document.getElementById("map");
@@ -81,6 +81,9 @@ function App() {
       const marker = L.marker([lat, lng]).addTo(map);
 
       marker.bindPopup(`Marker added at<br>${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
+
+      //Add to React state
+      setMarkers(prev => [...prev, { message, lat: e.latlng.lat, lng: e.latlng.lng}]);
     });
     
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -101,8 +104,11 @@ function App() {
 
 
   return (
-    <div>
+    <div style={{textAlign: "center"}}>
       <h1>Here is ze map</h1>
+
+      
+      
       <div id="map" style={{height: "400px", width: "100%"}}></div>
     </div>
   );
