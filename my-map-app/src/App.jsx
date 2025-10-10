@@ -87,10 +87,10 @@ function App() {
         const marker = L.marker([lat, lng], { icon: kirboIcon }).addTo(map);
 
         // Display a popup message when the map has been clicked
-        marker.bindPopup(`<b>$[marker]</b><br>${city}, ${state}, ${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
+        marker.bindPopup(`<b>${message}</b><br>${city}, ${state}, ${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
 
         //Add to React state
-        setMarkers(prev => [...prev, { marker, city, state, lat: e.latlng.lat, lng: e.latlng.lng}]);
+        setMarkers(prev => [...prev, { message, city, state, lat: e.latlng.lat, lng: e.latlng.lng}]);
       }
       catch(err){
         console.error("Error fetching location:", err);
@@ -117,6 +117,14 @@ function App() {
       {/* Header for the website with a type of h1 */}
       <h1>Here is ze map</h1>
 
+      <div id="buttons">
+        <button>Grey</button>
+        <button>SomethingSomething</button>
+        <button>Geo</button>
+        <button>Reset</button>
+      </div>
+      
+
       {/* Leave this space for display the list of locations */}
       <div style={{display: "flex", justifyContent: "center", gap: "2rem"}}>
         {/* Return the display of the map with its height and width */}
@@ -131,7 +139,7 @@ function App() {
             <ul>
               {markers.map((m, i) => (
                 <li key={i}>
-                  <b>{m.label}</b> - {m.lat.toFixed(4)}, {m.lng.toFixed(4)}
+                  <b>{m.message}</b><br></br>{m.city}, {m.state}, {m.lat.toFixed(4)}, {m.lng.toFixed(4)}
                 </li>
               ))}
             </ul>
