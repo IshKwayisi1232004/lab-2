@@ -53,7 +53,7 @@ function App() {
 
     // Map click popup
     //const popup = L.popup();
-    map.on('click', (e) => {
+    map.on('click',async (e) => {
 
       // Stores the message for the prompt window in a variable 
       const message = window.prompt("Favorite Recreational Area:");
@@ -64,21 +64,40 @@ function App() {
         return;
       }
 
-      //Adds an icon to the map when the user clicks on it
-      L.marker(e.latlng, { icon: kirboIcon }).addTo(map);
-
       //Creates the  state variables with the latitude and logitude
       const {lat, lng} = e.latlng;
 
-      //Creates a variable storing the latitude and logitude of the location
-      const marker = L.marker([lat, lng]).addTo(map);
+      // Fetch city and state data from OpenStreetMap API
+      try{
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+        );
 
-      // Display a popup message when the map has been clicked
-      marker.bindPopup(`Marker added at<br>${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
+        const data = await res.json();
 
-      //Add to React state
-      setMarkers(prev => [...prev, { message, lat: e.latlng.lat, lng: e.latlng.lng}]);
+        const city = data.address.city || data.address.town || data.address.village || "Unknown City";
+        const state = data.address.state || "Unknown State";
+
+      
+
+        //Adds an icon to the map when the user clicks on it
+        //L.marker(e.latlng, { icon: kirboIcon }).addTo(map);
+
+        //Creates a variable storing the latitude and logitude of the location
+        const marker = L.marker([lat, lng], { icon: kirboIcon }).addTo(map);
+
+        // Display a popup message when the map has been clicked
+        marker.bindPopup(`<b>$[marker]</b><br>${city}, ${state}, ${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
+
+        //Add to React state
+        setMarkers(prev => [...prev, { marker, city, state, lat: e.latlng.lat, lng: e.latlng.lng}]);
+      }
+      catch(err){
+        console.error("Error fetching location:", err);
+        alert("Could not get city/state info. Try again later.");
+      }
     });
+  
     
     // Adds the map to the website display
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
