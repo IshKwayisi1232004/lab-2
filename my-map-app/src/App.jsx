@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 //import reactLogo from './assets/react.svg'
 //import viteLogo from '/vite.svg'
 import './App.css'
@@ -23,6 +23,9 @@ import kirboImg from './assets/Kirbo.png'
 function App() {
     // Define states for setting markers on the map
     const [markers, setMarkers] = useState([]);
+    const mapRef = useRef(null); // store map reference
+    const markerGroupRef = useRef(null); // store marker group reference
+
     useEffect(()=> {
 
       // Wait until the component has mounted
@@ -42,6 +45,7 @@ function App() {
 
     {/* Initialize the map and set its view */}
     var map = L.map('map').setView([43.3623, -71.4613], 13);
+    mapRef.current = map;
 
     // Stores the variable for an icon used when the user clicks on the map
     const kirboIcon = L.icon({
@@ -50,6 +54,9 @@ function App() {
         iconAnchor: [20, 40], // Defines the anchor of the icon
     });
 
+    // create a marker layer group (easy to clear later)
+    const markerGroup = L.layerGroup().addTo(map);
+    markerGroupRef.current = markerGroup;
 
     // Map click popup
     //const popup = L.popup();
@@ -77,11 +84,6 @@ function App() {
 
         const city = data.address.city || data.address.town || data.address.village || "Unknown City";
         const state = data.address.state || "Unknown State";
-
-      
-
-        //Adds an icon to the map when the user clicks on it
-        //L.marker(e.latlng, { icon: kirboIcon }).addTo(map);
 
         //Creates a variable storing the latitude and logitude of the location
         const marker = L.marker([lat, lng], { icon: kirboIcon }).addTo(map);
@@ -111,6 +113,13 @@ function App() {
     };
   }, []);
 
+  // Reset handler
+  const handleReset = () => {
+    if (markerGroupRef.current) {
+      markerGroupRef.current.clearLayers(); // removes all markers from map
+    }
+    setMarkers([]); // clears list
+  };
 
   return (
     <div style={{textAlign: "center"}}>
@@ -118,10 +127,60 @@ function App() {
       <h1>Here is ze map</h1>
 
       <div id="buttons">
-        <button>Grey</button>
-        <button>SomethingSomething</button>
-        <button>Geo</button>
-        <button>Reset</button>
+        <button
+            style={{
+            background: "#8f00a1ff",
+            border: "none",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            marginBottom: "10px"
+          }}
+        >
+          Grey
+        </button>
+        <button
+            style={{
+            background: "#00afc2ff",
+            border: "none",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            marginBottom: "10px"
+          }}
+        >
+          RIP
+        </button>
+        <button
+            style={{
+            background: "#009f08ff",
+            border: "none",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            marginBottom: "10px"
+          }}
+        >
+          Geo
+        </button>
+
+        <button
+          onClick={handleReset}
+          style={{
+            background: "#ff4d4d",
+            border: "none",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            marginBottom: "10px"
+          }}
+        >
+          🔄 Reset Markers
+        </button>
       </div>
       
 
