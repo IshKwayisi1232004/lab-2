@@ -6,28 +6,17 @@ import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import kirboImg from './assets/Kirbo.png'
 
-// import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-// import markerIcon from 'leaflet/dist/images/marker-icon.png';
-// import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-
-
-// function MyButton(){
-//   return(
-//     <button>
-//       I'm a button
-//     </button>
-//     );
-// }
 
 function App() {
     // Define states for setting markers on the map
     const [markers, setMarkers] = useState([]);
+    const [reviews, setReviews] = useState([]);
+    
     const mapRef = useRef(null); // store map reference
     const markerGroupRef = useRef(null); // store marker group reference
     const currentLayerRef = useRef(null);
 
-        // Adds the map to the website display
+    // Adds the map to the website display
     const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19, 
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -39,7 +28,6 @@ function App() {
     });
 
     useEffect(()=> {
-
       // Wait until the component has mounted
       const mapContainer = document.getElementById("map");
       
@@ -47,13 +35,6 @@ function App() {
       if (!mapContainer){ 
         return; // prevent Leaflet from running too early
       }
-
-    //   L.Icon.Default.mergeOptions({
-    //      iconRetinaUrl: markerIcon2x,
-    //      iconUrl: markerIcon,
-    //      shadowUrl: markerShadow,
-    //  });
-
 
     {/* Initialize the map and set its view */}
     var map = L.map('map').setView([43.3623, -71.4613], 13);
@@ -75,7 +56,6 @@ function App() {
     // Map click popup
     //const popup = L.popup();
     map.on('click',async (e) => {
-
       // Stores the message for the prompt window in a variable 
       const message = window.prompt("Favorite Recreational Area:");
 
@@ -99,10 +79,71 @@ function App() {
         const city = data.address.city || data.address.town || data.address.village || "Unknown City";
         const state = data.address.state || "Unknown State";
 
+        //Popup form 
+        const popupContent = `
+          <div style="text-align:center;">
+            <b>${message}</b><br>${city || "Unknown"}, ${state || ""}<br><br>
+            <h4>Add Review</h4>
+            <div id="stars" style="font-size:20px; cursor:pointer;">★★★★★</div>
+            <textarea id="reviewText" rows="3" style="width:100%; margin-top:6px;" placeholder="Write something..."></textarea>
+            <button id="saveReview" style="margin-top:8px;">Save</button>
+          </div>
+        `;
+
         //Creates a variable storing the latitude and logitude of the location
-        const marker = L.marker([lat, lng], { icon: kirboIcon })
-          .bindPopup(`<b>${message}</b><br>${city}, ${state}`)
-          .addTo(markerGroupRef.current);  // ✅ add to the layer group, NOT the map
+        const marker = L.marker([lat, lng], { icon: kirboIcon });
+
+        marker.addTo(markerGroupRef.current)  // Add marker to the group
+          .bindPopup(popupContent)
+          .openPopup();  // Open popup immediately
+        
+        marker.on('popupopen', () => {
+          const starEl = document.getElementById('stars');
+          const saveBtn = document.getElementById('saveReview');
+          const textBox = document.getElementById('reviewText');
+
+          let rating = 0;
+
+          // Handle star clicks
+          if (starEl){
+            starEl.addEventListener('click', (ev) => {
+              const index = Math.floor(ev.offsetX / 20); //rough click index
+              rating = index + 1; 
+              starEl.innerHTML = '★★★★★' 
+                .split('')
+                .map((star, i) => `<span style="color:${i < rating ? 'gold' : '#ccc'};">★</span>`)
+                .join('');
+            })
+          }
+
+           // Handle save
+        if (saveBtn) {
+          saveBtn.addEventListener('click', () => {
+            const reviewText = textBox.value.trim();
+            if (!rating) {
+              alert('Please rate 1–5 stars');
+              return;
+            }
+
+            // update React state
+            const newMarker = {
+              id: Date.now(),
+              lat,
+              lng,
+              message,
+              city,
+              state,
+              rating,
+              reviewText,
+            };
+            setReviews((prev) => [...prev, newMarker]);
+
+            marker.bindPopup(`
+              <b>⭐ ${rating}/5</b><br>${reviewText || 'No comment.'}
+            `);
+          });
+        }
+      })
 
         //Add to React state
         setMarkers(prev => [...prev, { message, city, state, lat: e.latlng.lat, lng: e.latlng.lng}]);
@@ -118,6 +159,28 @@ function App() {
       map.remove();
     };
   }, []);
+
+    // --- helper: fetch city & state from coordinates ---
+  async function fetchCityState(lat, lng) {
+    try {
+      const res = await fetch(
+        `/nominatim/reverse?format=json&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            "User-Agent": "KirboMapDemo/1.0 (your_email@example.com)",
+            "Accept-Language": "en",
+          },
+        }
+      );
+      const data = await res.json();
+      return {
+        city: data.address.city || data.address.town || data.address.village,
+        state: data.address.state,
+      };
+    } catch {
+      return { city: "", state: "" };
+    }
+  }
 
   // Reset handler
   const handleReset = () => {
@@ -144,75 +207,100 @@ function App() {
   };
 
   return (
-    <div style={{textAlign: "center"}}>
-      {/* Header for the website with a type of h1 */}
-      <h1>Here is ze map</h1>
+    <div style={{display: "flex", textAlign: "center"}}>
+      {/* Left: map */}
+      <div style={{ flex: 3, padding: "10px" }}>
+        <h1>Here is ze map</h1>
+        <div id="buttons">
+          <button
+              onClick={switchToStreet}
+              style={{
+              background: "#8f00a1ff",
+              border: "none",
+              color: "white",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              marginBottom: "10px"
+            }}
+          >
+            Street View
+          </button>
+          <button
+              onClick={switchToSatellite}
+              style={{
+              background: "#009f08ff",
+              border: "none",
+              color: "white",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              marginBottom: "10px"
+            }}
+          >
+            Satellite View
+          </button>
 
-      <div id="buttons">
-        <button
-            onClick={switchToStreet}
+          <button
+            onClick={handleReset}
             style={{
-            background: "#8f00a1ff",
-            border: "none",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            marginBottom: "10px"
-          }}
-        >
-          Street View
-        </button>
-        <button
-            onClick={switchToSatellite}
-            style={{
-            background: "#009f08ff",
-            border: "none",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            marginBottom: "10px"
-          }}
-        >
-          Satellite View
-        </button>
+              background: "#ff4d4d",
+              border: "none",
+              color: "white",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              marginBottom: "10px"
+            }}
+          >
+            🔄 Reset Markers
+          </button>
+        </div>
+        
 
-        <button
-          onClick={handleReset}
-          style={{
-            background: "#ff4d4d",
-            border: "none",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            marginBottom: "10px"
-          }}
-        >
-          🔄 Reset Markers
-        </button>
+          {/* Leave this space for display the list of locations */}
+          <div style={{ flex: 3, padding: "10px" }}>
+            {/* Return the display of the map with its height and width */}
+            <div id="map" style={{height: "500px", width: "100%"}}></div>
+          </div>
       </div>
-      
 
-      {/* Leave this space for display the list of locations */}
-      <div style={{display: "flex", justifyContent: "center", gap: "2rem"}}>
-        {/* Return the display of the map with its height and width */}
-        <div id="map" style={{height: "400px", width: "100%"}}></div>
-
+      <div
+        style={{
+          flex: 2,
+          padding: "10px",
+          borderLeft: "2px solid #ccc",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
         {/* Marker List */}
         <div style={{textAlign: "left"}}>
-          <h3> Favorite Recreational Locale </h3>
+          <h3> ⭐ Reviews </h3>
           {markers.length === 0 ? (
             <p>No saved location yet... click on the map!</p>
           ) : (
-            <ul>
-              {markers.map((m, i) => (
-                <li key={i}>
-                  <b>{m.message}</b><br></br>{m.city}, {m.state}, {m.lat.toFixed(4)}, {m.lng.toFixed(4)}
-                </li>
-              ))}
-            </ul>
+              <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+                {markers.map((m) => (
+                  <li
+                    key={m.id}
+                    style={{
+                      backgroundColor: "#fff",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      marginBottom: "10px",
+                      boxShadow: "0 0 5px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <b>{m.label}</b>
+                    <br />
+                    {m.city}, {m.state}
+                    <br />
+                    ⭐ {m.rating}/5
+                    <br />
+                    <i>{m.text || "No review text"}</i>
+                  </li>
+                ))}
+              </ul>
             )}
           
         </div>
