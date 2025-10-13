@@ -25,6 +25,18 @@ function App() {
     const [markers, setMarkers] = useState([]);
     const mapRef = useRef(null); // store map reference
     const markerGroupRef = useRef(null); // store marker group reference
+    const currentLayerRef = useRef(null);
+
+        // Adds the map to the website display
+    const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, 
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    });
+
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Tiles &copy; Esri'
+    });
 
     useEffect(()=> {
 
@@ -46,6 +58,8 @@ function App() {
     {/* Initialize the map and set its view */}
     var map = L.map('map').setView([43.3623, -71.4613], 13);
     mapRef.current = map;
+    streetLayer.addTo(mapRef.current); // start with street layer
+    currentLayerRef.current = streetLayer;
 
     // Stores the variable for an icon used when the user clicks on the map
     const kirboIcon = L.icon({
@@ -98,13 +112,6 @@ function App() {
         alert("Could not get city/state info. Try again later.");
       }
     });
-  
-    
-    // Adds the map to the website display
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, 
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
 
     //Marker
     return () => {
@@ -120,6 +127,22 @@ function App() {
     setMarkers([]); // clears list
   };
 
+  const switchToStreet = () => {
+    if (mapRef.current && currentLayerRef.current !== streetLayer) {
+      mapRef.current.removeLayer(currentLayerRef.current);
+      streetLayer.addTo(mapRef.current);
+      currentLayerRef.current = streetLayer;
+    }
+  };
+
+  const switchToSatellite = () => {
+    if (mapRef.current && currentLayerRef.current !== satelliteLayer) {
+      mapRef.current.removeLayer(currentLayerRef.current);
+      satelliteLayer.addTo(mapRef.current);
+      currentLayerRef.current = satelliteLayer;
+    }
+  };
+
   return (
     <div style={{textAlign: "center"}}>
       {/* Header for the website with a type of h1 */}
@@ -127,6 +150,7 @@ function App() {
 
       <div id="buttons">
         <button
+            onClick={switchToStreet}
             style={{
             background: "#8f00a1ff",
             border: "none",
@@ -137,22 +161,10 @@ function App() {
             marginBottom: "10px"
           }}
         >
-          Grey
+          Street View
         </button>
         <button
-            style={{
-            background: "#00afc2ff",
-            border: "none",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            marginBottom: "10px"
-          }}
-        >
-          RIP
-        </button>
-        <button
+            onClick={switchToSatellite}
             style={{
             background: "#009f08ff",
             border: "none",
@@ -163,7 +175,7 @@ function App() {
             marginBottom: "10px"
           }}
         >
-          Geo
+          Satellite View
         </button>
 
         <button
