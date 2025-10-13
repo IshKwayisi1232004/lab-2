@@ -86,10 +86,9 @@ function App() {
         const state = data.address.state || "Unknown State";
 
         //Creates a variable storing the latitude and logitude of the location
-        const marker = L.marker([lat, lng], { icon: kirboIcon }).addTo(map);
-
-        // Display a popup message when the map has been clicked
-        marker.bindPopup(`<b>${message}</b><br>${city}, ${state}, ${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
+        const marker = L.marker([lat, lng], { icon: kirboIcon })
+          .bindPopup(`<b>${message}</b><br>${city}, ${state}`)
+          .addTo(markerGroupRef.current);  // ✅ add to the layer group, NOT the map
 
         //Add to React state
         setMarkers(prev => [...prev, { message, city, state, lat: e.latlng.lat, lng: e.latlng.lng}]);
