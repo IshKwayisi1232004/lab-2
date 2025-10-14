@@ -36,7 +36,7 @@ function App() {
         return; // prevent Leaflet from running too early
       }
 
-    {/* Initialize the map and set its view */}
+    // Initialize the map and set its view 
     var map = L.map('map').setView([43.3623, -71.4613], 13);
     mapRef.current = map;
     streetLayer.addTo(mapRef.current); // start with street layer
@@ -146,7 +146,7 @@ function App() {
       })
 
         //Add to React state
-        setMarkers(prev => [...prev, { message, city, state, lat: e.latlng.lat, lng: e.latlng.lng}]);
+        setMarkers(prev => [...prev, { id: Date.now(), message, city, state, lat: e.latlng.lat, lng: e.latlng.lng}]);
       }
       catch(err){
         console.error("Error fetching location:", err);
@@ -274,38 +274,27 @@ function App() {
         }}
       >
         {/* Marker List */}
-        <div style={{textAlign: "left"}}>
-          <h3> ⭐ Reviews </h3>
-          {markers.length === 0 ? (
-            <p>No saved location yet... click on the map!</p>
-          ) : (
-              <ul style={{ listStyle: "none", paddingLeft: 0 }}>
-                {markers.map((m) => (
-                  <li
-                    key={m.id}
-                    style={{
-                      backgroundColor: "#fff",
-                      padding: "10px",
-                      borderRadius: "8px",
-                      marginBottom: "10px",
-                      boxShadow: "0 0 5px rgba(0,0,0,0.1)",
-                    }}
-                  >
-                    <b>{m.label}</b>
-                    <br />
-                    {m.city}, {m.state}
-                    <br />
-                    ⭐ {m.rating}/5
-                    <br />
-                    <i>{m.text || "No review text"}</i>
-                  </li>
-                ))}
-              </ul>
-            )}
+        {reviews.length === 0 ? (
+          <p>No saved reviews yet... click on the map!</p>
+        ) : (
+          <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+            {reviews.map((r) => (
+              <li key={r.id}>
+                <b>{r.message}</b>
+                <br />
+                {r.city}, {r.state}
+                <br />
+                ⭐ {r.rating}/5
+                <br />
+                <i>{r.reviewText || "No review text"}</i>
+              </li>
+            ))}
+          </ul>
+        )}
           
         </div>
       </div>
-    </div>
+    
   );
 }
 
