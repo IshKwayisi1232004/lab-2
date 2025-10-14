@@ -164,7 +164,7 @@ function App() {
   async function fetchCityState(lat, lng) {
     try {
       const res = await fetch(
-        `/nominatim/reverse?format=json&lat=${lat}&lon=${lng}`,
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
         {
           headers: {
             "User-Agent": "KirboMapDemo/1.0 (your_email@example.com)",
